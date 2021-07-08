@@ -1,7 +1,6 @@
 const btnTrowDices = document.getElementById("btnTrowDices");
 const dicesOutput = document.getElementById("dicesOutput");
 const diceCountTableCells = document.getElementsByClassName("scoreTableCell");
-const tmpLockedCells = document.getElementsByClassName("tmpLocked");
 const scoreTable = document.getElementById("scoreTable");
 const combinationNames = [
   { name: "Ones", class: "SingleNumber" },
@@ -29,21 +28,16 @@ function Combination(name) {
   cell2.classList.add("scoreTableCell");
 
   this.outputCell = cell2;
-  this.outputCell.onclick = this.toggleTmpLocked;
 }
 
-Combination.prototype.toggleTmpLocked = function () {
-  [].slice.call(diceCountTableCells).map((cell) => {
-    cell.classList.remove("tmpLocked");
-  });
-
-  this.classList.add("tmpLocked");
+Combination.prototype.updateScore = function () {
+  this.score = this.outputCell.innerHTML = this.calculateScore();
 };
 
-Combination.prototype.updateScore = function () {
-  if (!this.outputCell.classList.contains("locked")) {
-    this.score = this.outputCell.innerHTML = this.calculateScore();
-  }
+Combination.prototype.getDicesSum = function () {
+  return dices.reduce((total, number) => {
+    return total + number;
+  });
 };
 
 // extends Combination
@@ -69,10 +63,7 @@ ThreeOfAKind.prototype = Object.create(Combination.prototype);
 
 ThreeOfAKind.prototype.calculateScore = function () {
   if (Object.values(diceCounter).find((number) => number >= 3) !== undefined) {
-    // vereenvoudigen
-    return dices.reduce((total, number) => {
-      return total + number;
-    });
+    return this.getDicesSum();
   } else {
     return 0;
   }
@@ -87,9 +78,7 @@ FourOfAKind.prototype = Object.create(Combination.prototype);
 
 FourOfAKind.prototype.calculateScore = function () {
   if (Object.values(diceCounter).find((number) => number >= 4) !== undefined) {
-    return dices.reduce((total, number) => {
-      return total + number;
-    });
+    return this.getDicesSum();
   } else {
     return 0;
   }
@@ -104,9 +93,7 @@ FullHouse.prototype = Object.create(Combination.prototype);
 
 FullHouse.prototype.calculateScore = function () {
   if (Object.values(diceCounter).sort().toString() === [2, 3].toString()) {
-    return dices.reduce((total, number) => {
-      return total + number;
-    });
+    return this.getDicesSum();
   } else {
     return 0;
   }
@@ -128,7 +115,6 @@ Game.prototype.playTurn = function () {
 };
 
 Game.prototype.throwDices = function () {
-  this.lockTmpLocked();
   diceCounter = {};
 
   dices = Array(5)
@@ -145,13 +131,6 @@ Game.prototype.throwDices = function () {
 Game.prototype.updateScoreTable = function () {
   this.combinations.forEach((combination) => {
     combination.updateScore();
-  });
-};
-
-Game.prototype.lockTmpLocked = function () {
-  [].slice.call(tmpLockedCells).forEach((cell) => {
-    cell.classList.remove("tmpLocked");
-    cell.classList.add("locked");
   });
 };
 
